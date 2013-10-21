@@ -214,7 +214,12 @@ func (h *Handler) ServeHTTP(rw http.ResponseWriter, req *http.Request) {
 		internalError(err)
 		return
 	}
-	defer cmd.Wait()
+	defer func() {
+		err := cmd.Wait()
+		if err != nil {
+			h.printf("cgi: process exited with error: %s", err)
+		}
+	}()
 	defer stdoutRead.Close()
 
 	linebody := bufio.NewReaderSize(stdoutRead, 1024)
